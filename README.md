@@ -57,10 +57,10 @@ The hierarchy is
 
 $$
 \begin{aligned}
-\hat{b}_j \mid \theta_j &\sim \mathcal{N}(\theta_j, s_j^2), \\[4pt]
-\theta_j \mid \beta_{h(j)}, \tau_w^2 &\sim \mathcal{N}(\beta_{h(j)}, \tau_w^2), \\[4pt]
-\beta_h \mid \alpha_{g(h)}, \tau_v^2 &\sim \mathcal{N}(\alpha_{g(h)}, \tau_v^2), \\[4pt]
-\alpha_g \mid \theta_0, \tau_u^2 &\sim \mathcal{N}(\theta_0, \tau_u^2), \\[6pt]
+\hat{b}_j \mid \theta_j &\sim \mathcal{N}(\theta_j, s_j^2), \\
+\theta_j \mid \beta_{h(j)}, \tau_w^2 &\sim \mathcal{N}(\beta_{h(j)}, \tau_w^2), \\
+\beta_h \mid \alpha_{g(h)}, \tau_v^2 &\sim \mathcal{N}(\alpha_{g(h)}, \tau_v^2), \\
+\alpha_g \mid \theta_0, \tau_u^2 &\sim \mathcal{N}(\theta_0, \tau_u^2), \\
 \theta_0 &\sim \mathcal{N}(\mu_0, s_0^2).
 \end{aligned}
 $$
@@ -76,9 +76,9 @@ $$
 Each Half-Cauchy is implemented via an inverse-gamma scale mixture:
 
 $$
-\tau^2 \mid \lambda \sim \text{IG}\!\left(\tfrac{1}{2}, \tfrac{1}{\lambda}\right),
+\tau^2 \mid \lambda \sim \text{IG}\left(\tfrac{1}{2}, \tfrac{1}{\lambda}\right),
 \qquad
-\lambda \sim \text{IG}\!\left(\tfrac{1}{2}, 1\right),
+\lambda \sim \text{IG}\left(\tfrac{1}{2}, 1\right),
 $$
 
 yielding conditionally conjugate updates.
