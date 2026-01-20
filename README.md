@@ -1,6 +1,3 @@
-# BayesHierarchy_MLM
-Bayesian Hierarchical Model for Metabolomic Studies
-
 # Model Overview
 
 ## Bilinear Regression Model (MatrixLM)
@@ -49,8 +46,8 @@ $$
 Metabolites are organized into subclasses and superclasses:
 
 $$
-j \;\mapsto\; h(j) \in \{1,\dots,H\}, \qquad
-h \;\mapsto\; g(h) \in \{1,\dots,G\}.
+j \mapsto h(j) \in \{1,\dots,H\}, \qquad
+h \mapsto g(h) \in \{1,\dots,G\}.
 $$
 
 The hierarchy is
