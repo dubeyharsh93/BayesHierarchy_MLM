@@ -1,6 +1,6 @@
-# COPDGene Study Bayesian Hierarchical Model Analysis
+# SAMS Study Bayesian Hierarchical Model Analysis
 
-Reproducible Julia implementation of the Bayesian hierarchical model analysis for the COPDGene Study metabolomics application presented in the accompanying manuscript.
+Reproducible Julia implementation of the Bayesian hierarchical model analysis for the SAMS Study metabolomics application presented in the accompanying manuscript.
 
 ## Table of Contents
 
@@ -13,15 +13,15 @@ Reproducible Julia implementation of the Bayesian hierarchical model analysis fo
 
 ## Introduction
 
-This directory contains the reproducible Julia implementation of the Bayesian hierarchical model analysis for the COPDGene Study metabolomics application presented in the accompanying manuscript. The project is distributed as a self-contained Julia environment and reproduces the manuscript figures, posterior estimates, and numerical summaries for the COPDGene study.
+This directory contains the reproducible Julia implementation of the Bayesian hierarchical model analysis for the SAMS study metabolomics application presented in the accompanying manuscript. The project is distributed as a self-contained Julia environment and reproduces the manuscript figures, posterior estimates, and numerical summaries for the SAMS study.
 
 ## Project Structure
 
 - **BayesHierarchy/**
   - Project.toml : Julia package dependencies.
   - Manifest.toml : Pinned package versions ensuring reproducibility.
-  - run_copd_mse.jl : Runs the Bayesian hierarchical model on the COPDGene metabolomics data and reproduces the estimation and prediction performance reported in the manuscript.
-  - run_copd_plot.jl : Generates the manuscript figures for the COPDGene application.
+  - run_sams_mse.jl : Runs the Bayesian hierarchical model on the SAMS metabolomics data and reproduces the estimation and prediction performance reported in the manuscript.
+  - run_sams_plot.jl : Generates the manuscript figures for the SAMS application.
   - gibbs_src/ : Contains the implementation of the Bayesian hierarchical Gibbs sampler together with supporting utility functions used throughout the analysis.
   - results/ : Stores all generated output including posterior summaries, prediction results, figures, and intermediate outputs.
 
@@ -45,7 +45,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/<yourname>/BayesHierarchy_MLM.git
-cd BayesHierarchy_MLM/COPDGene/BayesHierarchy
+cd BayesHierarchy_MLM/SAMSstudy/BayesHierarchy
 ```
 
 Instantiate
@@ -59,7 +59,7 @@ julia --project=. -e 'using Pkg; Pkg.instantiate()'
 ### Reproducing numerical results
 
 ```bash
-julia run_copd_mse.jl
+julia run_sams_mse.jl
 ```
 Produces
 
@@ -70,12 +70,12 @@ Produces
 ### Reproducing manuscript figures
 
 ```bash
-julia run_copd_plot.jl
+julia run_sams_plot.jl
 ```
 
 Produces
 
-* COPDGene manuscript figures
+* SAMS manuscript figures
 
 
 ## Results
