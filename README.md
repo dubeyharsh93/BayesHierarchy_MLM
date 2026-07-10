@@ -1,81 +1,111 @@
-# Model Overview
+# A Bayesian framework using shared features improves metabolite estimation and prediction
 
-## Bilinear Regression Model (MatrixLM)
+Harsh Vardhan Dubey<sup>1</sup>, Gregory Farage<sup>1</sup>, Katerina Kechris<sup>2</sup>, Śaunak Sen<sup>1</sup>
 
-Let  
-$Y \in \mathbb{R}^{n \times m}$ denote a matrix of responses (e.g., metabolite abundances),  
-$X \in \mathbb{R}^{n \times p}$ a design matrix of covariates, and  
-$Z \in \mathbb{R}^{m \times q}$ a feature design matrix encoding structure among metabolites  
-(e.g., identity, subclasses, or superclasses).
+><sup>1</sup>Department of Preventive Medicine, College of Medicine, University of Tennessee Health Science Center, Memphis, TN   
+<sup>2</sup>Department of Biostatistics & Informatics, Colorado School of Public Health, University of Colorado Anschutz Medical Campus, Aurora, CO
 
-The bilinear model is
+### Abstract
 
-$$
-Y = X B Z^\top + E,
-$$
+In metabolomics studies, incorporating shared biochemical feature information 
+among metabolites can improve estimation and prediction of metabolite effects in high-dimensional settings with limited sample sizes. 
+Many existing approaches treat metabolites as independent features, ignoring known biochemical structure such as shared subclasses and pathway membership. 
+We introduce a Bayesian hierarchical model that improves effect estimates from any well-established analytical method, using MatrixLM as a baseline in our evaluation, by incorporating the multilevel organization of 
+metabolites into subclasses and broader biochemical categories. 
+Bayesian shrinkage stabilizes individual metabolite estimates through partial pooling, reducing mean squared error while preserving interpretability. 
+We evaluate the approach using simulation studies across varying sample sizes and heterogeneity regimes, along with applications to three metabolomics datasets. 
+Our analyses suggest that incorporating shared feature 
+information improves both estimation and prediction relative to non-Bayesian linear 
+alternatives.
 
-where
+### Repository Info
 
-- $B \in \mathbb{R}^{p \times q}$ is the coefficient matrix,
-- $E$ is a noise matrix with independent rows.
+The repository reproduces all analyses presented in the manuscript, including
 
-MatrixLM provides, for each covariate $k$ and metabolite $j$,
+* three real metabolomics applications
+* one simulation study
+* manuscript figures
+* manuscript tables
 
-$$
-\hat{b}_{kj}, \qquad \mathrm{se}_{kj}.
-$$
+Each application is distributed as an independent Julia project with its own Project.toml and Manifest.toml, ensuring fully reproducible computational environments.
 
-For a fixed covariate $k$, we treat
+### Requirements
 
-$$
-\hat{b}_j = \hat{b}_{kj}, \qquad
-s_j = \mathrm{se}_{kj}, \qquad
-j = 1,\dots,m,
-$$
+* Julia 1.12.3
 
-as noisy observations of latent true effects $\theta_j$:
+Each project includes a fully specified Julia environment through
 
-$$
-\hat{b}_j \mid \theta_j \sim \mathcal{N}(\theta_j, s_j^2).
-$$
+* Project.toml
+* Manifest.toml
 
----
+No additional package installation is required.
 
-## Bayesian Hierarchical Meta-Analysis Model
+### Reproducing the Manuscript
 
-Metabolites are organized into subclasses and superclasses:
+Clone the repository
 
-$$
-j \mapsto h(j) \in \{1,\dots,H\}, \qquad
-h \mapsto g(h) \in \{1,\dots,G\}.
-$$
+```bash
+git clone https://github.com/<username>/BayesHierarchy_MLM.git
+cd BayesHierarchy_MLM
+```
 
-The hierarchy is
+Navigate to the project you wish to reproduce.
 
-$$
-\begin{aligned}
-\hat{b}_j \mid \theta_j &\sim \mathcal{N}(\theta_j, s_j^2), \\
-\theta_j \mid \beta_{h(j)}, \tau_w^2 &\sim \mathcal{N}(\beta_{h(j)}, \tau_w^2), \\
-\beta_h \mid \alpha_{g(h)}, \tau_v^2 &\sim \mathcal{N}(\alpha_{g(h)}, \tau_v^2), \\
-\alpha_g \mid \theta_0, \tau_u^2 &\sim \mathcal{N}(\theta_0, \tau_u^2), \\
-\theta_0 &\sim \mathcal{N}(\mu_0, s_0^2).
-\end{aligned}
-$$
+For example,
+```bash
+cd COPDGene/BayesHierarchy
+```
 
-Shrinkage priors on the scale parameters:
+Instantiate the Julia environment
+```bash
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+```
 
-$$
-\tau_w \sim \text{Half-Cauchy}(1), \quad
-\tau_v \sim \text{Half-Cauchy}(1), \quad
-\tau_u \sim \text{Half-Cauchy}(1).
-$$
+This installs all package versions required for the analysis.
 
-Each Half-Cauchy is implemented via an inverse-gamma scale mixture:
+#### COPDGene
+```bash
+cd COPDGene/BayesHierarchy
+julia run_copd_mse.jl
+julia run_copd_plot.jl
+```
 
-$$
-\tau^2 \mid \lambda \sim \text{IG}\left(\tfrac{1}{2}, \tfrac{1}{\lambda}\right),
-\qquad
-\lambda \sim \text{IG}\left(\tfrac{1}{2}, 1\right),
-$$
+#### SAMS
+```bash
+cd SAMSstudy/BayesHierarchy
+julia run_sams_mse.jl
+julia run_sams_plot.jl
+```
 
-yielding conditionally conjugate updates.
+#### PANSTEATITIS
+```bash
+cd PANSTEATITISstudy/BayesHierarchy
+julia run_pans_mse.jl
+julia run_pans_plot.jl
+```
+
+#### Simulation
+
+```bash
+cd Simulation/BayesHierarchy
+julia run_sim_mse.jl
+```
+
+### Expected Outputs
+
+Running the scripts reproduces
+
+* manuscript figures
+* manuscript summary tables
+* posterior estimates
+* prediction accuracy measures
+* estimation reproducibility analyses
+
+All generated outputs are written to the corresponding results/ directory.
+
+### Citation
+
+If you use this repository, please cite
+
+> Paper citation here
+
