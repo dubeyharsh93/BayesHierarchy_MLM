@@ -18,7 +18,7 @@ Our analyses suggest that incorporating shared feature
 information improves both estimation and prediction relative to non-Bayesian linear 
 alternatives.
 
-### Repository Info
+### Materials
 
 The repository reproduces all analyses presented in the manuscript, including
 
@@ -28,80 +28,10 @@ The repository reproduces all analyses presented in the manuscript, including
 * manuscript tables
 
 Each application is distributed as an independent Julia project with its own Project.toml and Manifest.toml, ensuring fully reproducible computational environments.
-
-### Requirements
-
-* Julia 1.12.3
-
-Each project includes a fully specified Julia environment through
-
-* Project.toml
-* Manifest.toml
-
-No additional package installation is required.
-
-### Reproducing the Manuscript
-
-Clone the repository
-
-```bash
-git clone https://github.com/<username>/BayesHierarchy_MLM.git
-cd BayesHierarchy_MLM
-```
-
-Navigate to the project you wish to reproduce.
-
-For example,
-```bash
-cd COPDGene/BayesHierarchy
-```
-
-Instantiate the Julia environment
-```bash
-julia --project=. -e 'using Pkg; Pkg.instantiate()'
-```
-
-This installs all package versions required for the analysis.
-
-#### COPDGene
-```bash
-cd COPDGene/BayesHierarchy
-julia run_copd_mse.jl
-julia run_copd_plot.jl
-```
-
-#### SAMS
-```bash
-cd SAMSstudy/BayesHierarchy
-julia run_sams_mse.jl
-julia run_sams_plot.jl
-```
-
-#### PANSTEATITIS
-```bash
-cd PANSTEATITISstudy/BayesHierarchy
-julia run_pans_mse.jl
-julia run_pans_plot.jl
-```
-
-#### Simulation
-
-```bash
-cd Simulation/BayesHierarchy
-julia run_sim_mse.jl
-```
-
-### Expected Outputs
-
-Running the scripts reproduces
-
-* manuscript figures
-* manuscript summary tables
-* posterior estimates
-* prediction accuracy measures
-* estimation reproducibility analyses
-
-All generated outputs are written to the corresponding results/ directory.
+- [**COPDGene Study**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/COPDGene)
+- [**Statin-Associated Muscle Symptoms (SAMS) Study**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/PANSTEATITISstudy)  
+- [**Pansteatitis Mozambique Tilapia Study**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/SAMSstudy)
+- [**Simulation**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/Simulation)  
 
 ### Citation
 
@@ -109,3 +39,11 @@ If you use this repository, please cite
 
 > Paper citation here
 
+### References:
+
+- Gregory Farage, Chenhao Zhao, Hyo Young Choi, Timothy J. Garrett, Marshall B. Elam, Katerina Kechris, and Śaunak Sen. Matrix linear models for connecting metabolite composition to individual characteristics. Metabolites, 15(2), 2025. ISSN 2218-1989. doi: 10.3390/metabo15020140. URL https://www.mdpi.com/2218-1989/15/2/140.
+
+### Resources:
+
+- [MatrixLM.jl package](https://github.com/senresearch/MatrixLM.jl)
+- [Sen Research Group Resources](https://senresearch.github.io/)
