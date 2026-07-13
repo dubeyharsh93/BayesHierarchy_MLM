@@ -39,7 +39,7 @@ The simulation study generates synthetic datasets from a hierarchical Bayesian m
 Clone the repository:
 
 ```bash
-git clone https://github.com/<yourname>/BayesHierarchy_MLM.git
+git clone https://github.com/senresearch/BayesHierarchy_MLM.git
 cd BayesHierarchy_MLM/Simulation
 ```
 

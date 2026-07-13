@@ -44,7 +44,7 @@ This directory contains the reproducible Julia implementation of the Bayesian hi
 Clone the repository:
 
 ```bash
-git clone https://github.com/<yourname>/BayesHierarchy_MLM.git
+git clone https://github.com/senresearch/BayesHierarchy_MLM.git
 cd BayesHierarchy_MLM/PANSTEATITISstudy/BayesHierarchy
 ```
 
