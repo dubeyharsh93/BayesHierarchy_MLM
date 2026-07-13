@@ -28,10 +28,10 @@ The repository reproduces all analyses presented in the manuscript, including
 * manuscript tables
 
 Each application is distributed as an independent Julia project with its own Project.toml and Manifest.toml, ensuring fully reproducible computational environments.
-- [**COPDGene Study**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/COPDGene)
-- [**Statin-Associated Muscle Symptoms (SAMS) Study**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/PANSTEATITISstudy)  
-- [**Pansteatitis Mozambique Tilapia Study**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/SAMSstudy)
-- [**Simulation**](https://github.com/dubeyharsh93/BayesHierarchy_MLM/tree/main/Simulation)  
+- [**COPDGene Study**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/COPDGene)
+- [**Statin-Associated Muscle Symptoms (SAMS) Study**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/PANSTEATITISstudy)  
+- [**Pansteatitis Mozambique Tilapia Study**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/SAMSstudy)
+- [**Simulation**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/Simulation)  
 
 ### Citation
 
