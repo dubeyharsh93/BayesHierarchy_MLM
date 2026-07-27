@@ -3,7 +3,7 @@
 #
 # Purpose:
 #   Run simulation study and produce results to compare MSE 
-# of Bayesian hierarchical model MatrixLM.
+#   of Bayesian hierarchical model to MatrixLM.
 ############################################################
 
 using Pkg
@@ -118,15 +118,21 @@ function run_one_simulation_rep_1level(;
     )
 end
 
-function run_simstudy_grid_1level_2hetero(;
-    nrep::Int = 10,
+function run_simstudy_grid_1level_3hetero(;
+    nrep::Int = 100,
 
     nm_grid = [
-        (n = 60,  m = 300),
-        (n = 60,  m = 770),
-        (n = 200, m = 300),
-        (n = 200, m = 770),
-        (n = 400, m = 770),
+        (n = 50,   m = 300),
+        (n = 75,   m = 300),
+        (n = 100,  m = 300),
+        (n = 150,  m = 300),
+        (n = 200,  m = 300),
+        (n = 300,  m = 300),
+        (n = 400,  m = 300),
+        (n = 550,  m = 300),
+        (n = 700,  m = 300),
+        (n = 850,  m = 300),
+        (n = 1000, m = 300),
     ],
 
     sim_base_kwargs = (
@@ -139,8 +145,9 @@ function run_simstudy_grid_1level_2hetero(;
     ),
 
     hetero_regimes = [
+        (name = "low",      tau_v = 0.06f0, tau_w = 0.04f0),
         (name = "moderate", tau_v = 0.12f0, tau_w = 0.08f0),
-        (name = "large",    tau_v = 0.30f0, tau_w = 0.12f0),
+        (name = "high",     tau_v = 0.24f0, tau_w = 0.16f0),
     ],
 
     split_frac::Float64 = 0.70,
@@ -158,9 +165,12 @@ function run_simstudy_grid_1level_2hetero(;
 
     for (rid,regime) in enumerate(hetero_regimes)
         for (sid, nm) in enumerate(nm_grid)
-            for rep in 1:nrep
+            println(
+                "Starting regime=$(regime.name), n=$(nm.n), " *
+                "m=$(nm.m), repetitions=$nrep"
+            )
 
-                println("Running regime=$(regime.name), n=$(nm.n), m=$(nm.m), rep=$rep / $nrep")
+            for rep in 1:nrep
 
                 sim_seed = seed_base + 10_000_000 * rid + 1_000_000 * sid + 10_000 * rep
                 split_seed = sim_seed + 777
@@ -197,8 +207,8 @@ function run_simstudy_grid_1level_2hetero(;
                     rows,
                     (
                         heterogeneity = regime.name,
-                        n = Float64(nm.n),
-                        m = Float64(nm.m),
+                        n = nm.n,
+                        m = nm.m,
                         rep = rep,
                         coef_mse_mlm = res.coef_mse_mlm,
                         coef_mse_bayes = res.coef_mse_bayes,
@@ -208,6 +218,10 @@ function run_simstudy_grid_1level_2hetero(;
                         ratio_test_mse = res.ratio_test_mse
                     )
                 )
+
+                if rep == 1 || rep % 10 == 0 || rep == nrep
+                    println("  Completed repetition $rep / $nrep")
+                end
             end
         end
     end
@@ -216,11 +230,22 @@ function run_simstudy_grid_1level_2hetero(;
 
     df_summary = combine(
         groupby(df, [:heterogeneity, :n, :m]),
-        :ratio_coef_mse => mean => :ratio_coef_mse_mean,
-        :ratio_test_mse => mean => :ratio_test_mse_mean
+        :coef_mse_mlm => mean => :CoefMSE_MatrixLM,
+        :coef_mse_bayes => mean => :CoefMSE_Bayes,
+        :test_mse_mlm => mean => :TestMSE_MatrixLM,
+        :test_mse_bayes => mean => :TestMSE_Bayes,
+        nrow => :n_repetitions
     )
 
-    hetero_order = Dict("moderate" => 1, "large" => 2)
+    # Primary manuscript metrics: ratios of mean MSEs across
+    # repetitions, rather than means of repetition-specific ratios.
+    df_summary.ratio_coef_mse_mean =
+        df_summary.CoefMSE_MatrixLM ./ df_summary.CoefMSE_Bayes
+
+    df_summary.ratio_test_mse_mean =
+        df_summary.TestMSE_MatrixLM ./ df_summary.TestMSE_Bayes
+
+    hetero_order = Dict("low" => 1, "moderate" => 2, "high" => 3)
     sort!(
         df_summary,
         [:heterogeneity, :n, :m],
@@ -232,15 +257,15 @@ end
 
 println("Running simulation study...")
 
-df_all, df_summary = run_simstudy_grid_1level_2hetero()
+df_all, df_summary = run_simstudy_grid_1level_3hetero(nrep = 100)
 
 CSV.write(
-    joinpath(@__DIR__, "results", "tables", "simulation_1level_2hetero_all_reps.csv"),
+    joinpath(@__DIR__, "results", "tables", "simulation_1level_3hetero_all_reps.csv"),
     df_all
 )
 
 CSV.write(
-    joinpath(@__DIR__, "results", "tables", "simulation_1level_2hetero_summary.csv"),
+    joinpath(@__DIR__, "results", "tables", "simulation_1level_3hetero_summary.csv"),
     df_summary
 )
 
@@ -249,9 +274,23 @@ df_rounded_sel = select(
     :heterogeneity => :Heterogeneity,
     :n,
     :m,
+    :CoefMSE_MatrixLM,
+    :CoefMSE_Bayes,
+    :TestMSE_MatrixLM,
+    :TestMSE_Bayes,
     :ratio_coef_mse_mean,
     :ratio_test_mse_mean
 )
+
+for column in [
+    :CoefMSE_MatrixLM,
+    :CoefMSE_Bayes,
+    :TestMSE_MatrixLM,
+    :TestMSE_Bayes,
+]
+    df_rounded_sel[!, column] =
+        round.(df_rounded_sel[!, column]; digits = 4)
+end
 
 df_rounded_sel.ratio_coef_mse_mean =
     round.(df_rounded_sel.ratio_coef_mse_mean; digits = 3)
@@ -282,6 +321,6 @@ pretty_table(
 
 println()
 println("Saved:")
-println(joinpath(@__DIR__, "results", "tables", "simulation_1level_2hetero_all_reps.csv"))
-println(joinpath(@__DIR__, "results", "tables", "simulation_1level_2hetero_summary.csv"))
+println(joinpath(@__DIR__, "results", "tables", "simulation_1level_3hetero_all_reps.csv"))
+println(joinpath(@__DIR__, "results", "tables", "simulation_1level_3hetero_summary.csv"))
 println("Done.")
