@@ -1,97 +1,134 @@
 ############################################################################
 # run_copd_mse.jl
 #
-# Reproducible COPDGene Bayesian hierarchical analysis to
-# produce the prediction and estimate reproducibility results 
-# comparing MatrixLM and Bayesian hierarchical model.
+# Reproducible repeated-subsampling analysis for the COPDGene
+# application. Produces covariate-specific reference MSE metrics.
+#
+# Usage:
+#   julia --project=. run_copd_mse.jl       # R = 100
+#   julia --project=. run_copd_mse.jl 1     # quick test
 ############################################################################
 
 using Pkg
 Pkg.activate(@__DIR__)
 
-using Statistics
+using CSV
+using DataFrames
 
-include(joinpath(@__DIR__,"gibbs_src", "construct_matrices.jl"))
+include(joinpath(@__DIR__, "gibbs_src", "construct_matrices.jl"))
 include(joinpath(@__DIR__, "gibbs_src", "fit_matrixlm.jl"))
 include(joinpath(@__DIR__, "gibbs_src", "gibbs_sampler.jl"))
-include(joinpath(@__DIR__, "gibbs_src", "train_test_split.jl"))
 include(joinpath(@__DIR__, "gibbs_src", "fit_all_covariates.jl"))
+include(joinpath(@__DIR__, "gibbs_src", "subsampling_analysis.jl"))
 
-function test_mse(Y_test, X_test, B)
-    Yhat = X_test * B
-    R = Y_test .- Yhat
-    return mean(abs2, R)
+const TRAIN_SIZES = [
+    40, 60, 80, 100, 125, 150,
+    200, 250, 300, 400, 500, 600
+]
+
+const DEFAULT_REPETITIONS = 100
+const SPLIT_SEED = 2026
+const GIBBS_SEED = 1000
+
+function parse_repetitions(args)
+    R = isempty(args) ? DEFAULT_REPETITIONS : parse(Int, first(args))
+    @assert R > 0 "Number of repetitions must be positive"
+    return R
 end
+
+R = parse_repetitions(ARGS)
+
+table_dir = joinpath(@__DIR__, "results", "tables")
+mkpath(table_dir)
 
 println("Constructing COPDGene matrices...")
 obj = construct_copdgene_matrices()
 
-println("Creating train/test split...")
-split = train_test_split_rows(obj.Y, obj.X; train_frac = 0.70, seed = 2026)
+println(
+    "Preparing repeated subsamples for $(length(TRAIN_SIZES)) " *
+    "training sizes with R=$R..."
+)
 
-println("Train size: ", size(split.Y_train))
-println("Test size:  ", size(split.Y_test))
+splits = make_subsample_splits(
+    obj.Y,
+    obj.X;
+    train_sizes = TRAIN_SIZES,
+    R = R,
+    seed = SPLIT_SEED
+)
 
-println("Fitting MatrixLM on training data...")
-mlm_train = fit_copdgene_matrixlm(split.X_train, split.Y_train, obj.Z)
+fit_results = fit_repeated_subsamples(
+    splits,
+    obj.Y,
+    obj.X,
+    obj.Z,
+    obj.subclass_of_met,
+    obj.H;
+    mu0 = 0.0,
+    s0 = 1.0,
+    halfcauchy_scale = 1.0,
+    n_iter = 5000,
+    burnin = 1000,
+    thin = 1,
+    seed0 = GIBBS_SEED,
+    keep_results = false
+)
 
-println("Running Bayesian model on training estimates...")
-B_bayes_train, SE_bayes_train, res_by_cov = fit_bayes_all_covariates_one(
-        mlm_train.coef,
-        mlm_train.se,
-        obj.subclass_of_met,
-        obj.H;
-        mu0 = 0.0,
-        s0 = 1.0,
-        n_iter = 5000,
-        burnin = 1000,
-        thin = 1,
-        seed0 = 1000,
-        keep_results = false
-    )
+repetition_metrics, summary = summarize_reference_agreement(
+    fit_results;
+    covariate_names = String.(obj.coef_names)
+)
 
-B_mlm = Float64.(mlm_train.coef)
-B_bys = Float64.(B_bayes_train)
+covariates_of_interest = ["Age", "BMI", "COPD: 1"]
 
-mse_mlm = test_mse(Float64.(split.Y_test), Float64.(split.X_test), B_mlm)
-mse_bys = test_mse(Float64.(split.Y_test), Float64.(split.X_test), B_bys)
+missing_covariates = setdiff(
+    covariates_of_interest,
+    unique(summary.covariate)
+)
+
+@assert isempty(missing_covariates) "Missing covariates: $missing_covariates"
+
+selected_covariates = subset(
+    summary,
+    :covariate => ByRow(x -> x in covariates_of_interest)
+)
+
+selected_covariates = select(
+    selected_covariates,
+    :covariate,
+    :n_train,
+    :n_test,
+    :mean_mse_mlm,
+    :mean_mse_bayes,
+    :ratio_of_mean_mses,
+    :percent_reduction_from_mean_mses,
+    :R
+)
+
+sort!(selected_covariates, [:covariate, :n_train])
+
+all_reps_path = joinpath(
+    table_dir,
+    "copdgene_rmr_all_reps.csv"
+)
+
+summary_path = joinpath(
+    table_dir,
+    "copdgene_rmr_summary.csv"
+)
+
+selected_path = joinpath(
+    table_dir,
+    "copdgene_rmr_selected_covariates.csv"
+)
+
+CSV.write(all_reps_path, repetition_metrics)
+CSV.write(summary_path, summary)
+CSV.write(selected_path, selected_covariates)
 
 println()
-println("Prediction results")
-println("------------------")
-println("MatrixLM test MSE: ", mse_mlm)
-println("Bayesian test MSE: ", mse_bys)
-println("Prediction ratio MatrixLM / Bayes: ", mse_mlm / mse_bys)
-
-println()
-println("Fitting MatrixLM on test data...")
-mlm_test = fit_copdgene_matrixlm(split.X_test, split.Y_test, obj.Z)
-
-println("Running Bayesian model on test estimates...")
-B_bayes_test, SE_bayes_test, res_by_cov_test = fit_bayes_all_covariates_one(
-        mlm_test.coef,
-        mlm_test.se,
-        obj.subclass_of_met,
-        obj.H;
-        mu0 = 0.0,
-        s0 = 1.0,
-        n_iter = 5000,
-        burnin = 1000,
-        thin = 1,
-        seed0 = 1000,
-        keep_results = false
-    )
-
-mse_bys_te = mean(abs2, B_bys .- B_bayes_test)
-mse_te_tr  = mean(abs2, mlm_test.coef .- mlm_train.coef)
-
-println()
-println("Estimate reproducibility results")
-println("--------------------------------")
-println("MatrixLM estimate MSE: ", mse_te_tr)
-println("Bayesian estimate MSE: ", mse_bys_te)
-println("Estimate reproducibility ratio MatrixLM / Bayes: ",
-        mse_te_tr / mse_bys_te)
-
-println()
+println("Saved:")
+println(all_reps_path)
+println(summary_path)
+println(selected_path)
 println("Done.")
