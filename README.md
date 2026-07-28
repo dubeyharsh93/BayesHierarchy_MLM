@@ -7,16 +7,13 @@ Harsh Vardhan Dubey<sup>1</sup>, Gregory Farage<sup>1</sup>, Katerina Kechris<su
 
 ### Abstract
 
-In metabolomics studies, incorporating shared biochemical feature information 
-among metabolites can improve estimation and prediction of metabolite effects in high-dimensional settings with limited sample sizes. 
-Many existing approaches treat metabolites as independent features, ignoring known biochemical structure such as shared subclasses and pathway membership. 
-We introduce a Bayesian hierarchical model that improves effect estimates from any well-established analytical method, using MatrixLM as a baseline in our evaluation, by incorporating the multilevel organization of 
-metabolites into subclasses and broader biochemical categories. 
-Bayesian shrinkage stabilizes individual metabolite estimates through partial pooling, reducing mean squared error while preserving interpretability. 
-We evaluate the approach using simulation studies across varying sample sizes and heterogeneity regimes, along with applications to three metabolomics datasets. 
-Our analyses suggest that incorporating shared feature 
-information improves both estimation and prediction relative to non-Bayesian linear 
-alternatives.
+External biological knowledge provides valuable information about relationships among metabolites, yet this information is usually not incorporated directly into statistical estimation procedures.
+Most existing approaches estimate metabolite effects independently, ignoring known biochemical structure such as shared subclasses and pathway membership.
+We propose a Bayesian hierarchical framework that improves metabolite effect estimates by incorporating external biological information describing relationships among metabolites.
+The proposed method improves metabolite-specific estimates by allowing related metabolites to borrow information from one another while preserving metabolite-level inference.
+We evaluate the methodology using simulation studies across a range of sample sizes and heterogeneity regimes together with three metabolomics applications involving distinct biological annotation structures.
+Across both simulated and real datasets, incorporating external biological information consistently improves metabolite effect estimation.
+Gains are most pronounced when sample sizes are small and metabolite classes are informative, i.e. more homogenous within classes.
 
 ### Materials
 

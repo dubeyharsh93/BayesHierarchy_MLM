@@ -19,7 +19,7 @@ This directory contains the reproducible Julia implementation of the Bayesian hi
 
 ## Analysis Design
 
-The PANSTEATITIS analysis evaluates the stability of metabolite effect estimation across training sizes of `10`, `15`, `20`, and `25`. Each training size is evaluated using 100 repeated complementary training/testing splits by default.
+The PANSTEATITIS analysis evaluates the benefit of biologically informed partial pooling in metabolite effect estimation across training sizes of `10`, `15`, `20`, and `25` of the PANSTEATITIS data. Each training size is evaluated using 100 repeated complementary training/testing splits by default.
 
 For each split, MatrixLM is fitted independently to the training and testing subsets. The Bayesian hierarchical model is applied to the training MatrixLM effect estimates and standard errors. Both training estimators are compared with the MatrixLM effect estimates from the complementary reference subset.
 
