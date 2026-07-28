@@ -45,7 +45,6 @@ function make_coef_lookup(coef_names::Vector{String})
 end
 
 function construct_pans_matrices(;
-    #xCovariates = ["Intercept", "Status", "Sex", "Age", "Weight", "Length"],
     xCovariates = ["Status", "Sex", "Age", "Weight", "Length"],
     center_y::Bool = true
 )
@@ -187,6 +186,10 @@ function construct_pans_matrices(;
 
     @assert maximum(subclass_of_met) == H
     @assert maximum(superclass_of_sub) == G
+    @assert size(X, 1) == size(Y, 1) "X and Y must have the same number of subjects"
+    @assert size(X, 2) == length(coef_names) "Coefficient names must align with X columns"
+    @assert size(Z) == (m, m) "Z must be an m × m identity matrix"
+    @assert length(subclass_of_met) == m "Each metabolite must have a subclass assignment"
 
     return (
         dfInd = dfInd,

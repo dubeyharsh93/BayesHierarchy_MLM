@@ -2,7 +2,7 @@
 # fit_matrixlm.jl
 #
 # Purpose:
-#   Fit MatrixLM for COPDGene using X, Y, Z.
+#   Fit MatrixLM for PANSTEATITIS using X, Y, Z.
 #
 # Input:
 #   X : individual-level predictor matrix
@@ -17,9 +17,7 @@ using MatrixLM
 using LinearAlgebra
 using Statistics
 
-using MatrixLM
-
-function fit_copdgene_matrixlm(X, Y, Z)
+function fit_pans_matrixlm(X, Y, Z)
     fit = mlm(
         RawData(Response(Y), Predictors(X, Z)),
         addXIntercept = false,
