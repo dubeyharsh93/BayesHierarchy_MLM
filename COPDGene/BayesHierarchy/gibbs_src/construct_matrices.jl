@@ -52,7 +52,6 @@ end
 
 function construct_copdgene_matrices(;
     xCovariates = [
-        "Intercept",
         "Sex",
         "Age",
         "BMI",
@@ -157,6 +156,15 @@ function construct_copdgene_matrices(;
         super_of_sub[h] = superclass_of_met[idx]
     end
 
+    ########################################################
+    # Validate matrix and annotation alignment
+    ########################################################
+
+    @assert size(X, 1) == size(Y, 1) "X and Y must have the same number of subjects"
+    @assert size(Z, 1) == size(Y, 2) "Z rows must match the number of metabolites"
+    @assert length(subclass_of_met) == size(Y, 2) "Subclass annotations must align with Y"
+    @assert length(coef_names) == size(X, 2) "Coefficient names must align with X columns"
+
     # Create a lookup dictionary for covariates
     coef_lookup = Dict{String,Int}()
     for (i, nm) in enumerate(coef_names)
@@ -188,4 +196,3 @@ function construct_copdgene_matrices(;
     )
 
 end
-

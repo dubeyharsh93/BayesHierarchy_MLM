@@ -100,6 +100,10 @@ function construct_sams_matrices(;
     X = Matrix{Float64}(X)
     Y = Matrix{Float64}(Y)
 
+    # The manuscript analysis excludes the intercept.
+    X = X[:, 2:end]
+    coef_names = coef_names[2:end]
+
     # Total DB grouping
     db_vals = dfZraw.Total_DB
 
@@ -124,6 +128,11 @@ function construct_sams_matrices(;
     for (i, nm) in enumerate(coef_names)
         coef_lookup[nm] = i
     end
+
+    @assert size(X, 1) == size(Y, 1) "X and Y must have the same number of subjects"
+    @assert size(Z, 1) == size(Y, 2) "Z rows must match the number of lipids"
+    @assert length(subclass_of_met) == size(Y, 2) "Subclass annotations must align with Y"
+    @assert length(coef_names) == size(X, 2) "Coefficient names must align with X columns"
 
     return (
         df = df,

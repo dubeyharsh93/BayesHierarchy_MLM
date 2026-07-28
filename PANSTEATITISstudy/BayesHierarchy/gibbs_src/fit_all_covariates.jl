@@ -67,8 +67,6 @@ function fit_bayes_all_covariates_one(
         if keep_results
             res_list[k] = res_k
         end
-
-        println("Done covariate k=$k / $p")
     end
 
     return B_bayes, SE_bayes, res_list

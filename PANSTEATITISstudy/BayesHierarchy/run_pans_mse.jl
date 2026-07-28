@@ -1,130 +1,158 @@
 ####################################################################
 # run_pans_mse.jl
 #
-# Purpose:
-#   Run the Bayesian hierarchical model on the PANSTEATITIS data and 
-#   compute MSE ratios for predictions and estimate reproducibility.
+# Reproducible repeated-subsampling analysis for the PANSTEATITIS
+# study. Produces the manuscript table for the Weight covariate.
+#
+# Usage:
+#   julia --project=. run_pans_mse.jl       # R = 100
+#   julia --project=. run_pans_mse.jl 1     # quick test
 ####################################################################
 
 using Pkg
 Pkg.activate(@__DIR__)
 
-using Statistics
+using CSV
+using DataFrames
+using Printf
 
 include(joinpath(@__DIR__, "gibbs_src", "construct_pans_matrices.jl"))
 include(joinpath(@__DIR__, "gibbs_src", "fit_matrixlm.jl"))
 include(joinpath(@__DIR__, "gibbs_src", "gibbs_sampler.jl"))
-include(joinpath(@__DIR__, "gibbs_src", "train_test_split.jl"))
 include(joinpath(@__DIR__, "gibbs_src", "fit_all_covariates.jl"))
+include(joinpath(@__DIR__, "gibbs_src", "subsampling_analysis.jl"))
 
-function test_mse(Y_te::AbstractMatrix{<:Real},
-                  X_te::AbstractMatrix{<:Real},
-                  B::AbstractMatrix{<:Real})
+const TRAIN_SIZES = [10, 15, 20, 25]
+const DEFAULT_REPETITIONS = 100
+const SPLIT_SEED = 2026
+const GIBBS_SEED = 1000
+const FOCAL_COVARIATE = "Weight"
 
-    n_te, m = size(Y_te)
-    @assert size(X_te, 1) == n_te
-    p = size(X_te, 2)
-    @assert size(B) == (p, m)
-
-    Yhat = X_te * B
-    R = Y_te .- Yhat
-
-    mse_all = mean(abs2, R)
-    mse_met = vec(mean(abs2, R; dims = 1))
-    mse_ind = vec(mean(abs2, R; dims = 2))
-
-    return mse_all, mse_met, mse_ind
+function parse_repetitions(args)
+    R = isempty(args) ? DEFAULT_REPETITIONS : parse(Int, first(args))
+    @assert R > 0 "Number of repetitions must be positive"
+    return R
 end
+
+function latex_booktabs_table(df::DataFrame)
+    io = IOBuffer()
+
+    println(io, raw"\begin{tabular}{cccccc}")
+    println(io, raw"\toprule")
+    println(
+        io,
+        "Training Size & Reference Size & MatrixLM MSE & " *
+        "Bayesian MSE & Reference MSE Ratio & " *
+        "Error Reduction (\\%) \\\\"
+    )
+    println(io, raw"\midrule")
+
+    for row in eachrow(df)
+        @printf(
+            io,
+            "%d & %d & %.4f & %.4f & %.4f & %.1f \\\\\n",
+            row.n_train,
+            row.n_test,
+            row.mean_mse_mlm,
+            row.mean_mse_bayes,
+            row.ratio_of_mean_mses,
+            row.percent_reduction_from_mean_mses
+        )
+    end
+
+    println(io, raw"\bottomrule")
+    println(io, raw"\end{tabular}")
+
+    return String(take!(io))
+end
+
+R = parse_repetitions(ARGS)
+
+table_dir = joinpath(@__DIR__, "results", "tables")
+mkpath(table_dir)
 
 println("Constructing PANSTEATITIS matrices...")
 obj = construct_pans_matrices()
 
-println("Creating train/test split...")
-split = train_test_split_rows(
+println(
+    "Preparing repeated subsamples for $(length(TRAIN_SIZES)) " *
+    "training sizes with R=$R..."
+)
+
+splits = make_subsample_splits(
     obj.Y,
     obj.X;
-    train_frac = 0.70,
-    seed = 5
+    train_sizes = TRAIN_SIZES,
+    R = R,
+    seed = SPLIT_SEED
 )
 
-println("Train size: ", size(split.Y_train))
-println("Test size:  ", size(split.Y_test))
-
-println("Fitting MatrixLM on training data...")
-mlm_train = fit_copdgene_matrixlm(
-    split.X_train,
-    split.Y_train,
-    obj.Z
+fit_results = fit_repeated_subsamples(
+    splits,
+    obj.Y,
+    obj.X,
+    obj.Z,
+    obj.subclass_of_met,
+    obj.H;
+    mu0 = 0.0,
+    s0 = 1.0,
+    halfcauchy_scale = 1.0,
+    n_iter = 5000,
+    burnin = 1000,
+    thin = 1,
+    seed0 = GIBBS_SEED,
+    keep_results = false
 )
 
-println("Running one-level Bayesian model on training estimates...")
-B_bayes_train, SE_bayes_train, res_train =
-    fit_bayes_all_covariates_one(
-        mlm_train.coef,
-        mlm_train.se,
-        obj.subclass_of_met,
-        obj.H;
-        mu0 = 0.0,
-        s0 = 1.0,
-        n_iter = 5000,
-        burnin = 1000,
-        thin = 1,
-        seed0 = 1000,
-        keep_results = false
-    )
-
-Y_test_f = Float64.(split.Y_test)
-X_test_f = Float64.(split.X_test)
-
-B_mlm = Float64.(mlm_train.coef)
-B_bys = Float64.(B_bayes_train)
-
-mse_mlm, mse_mlm_met, mse_mlm_ind =
-    test_mse(Y_test_f, X_test_f, B_mlm)
-
-mse_bys, mse_bys_met, mse_bys_ind =
-    test_mse(Y_test_f, X_test_f, B_bys)
-
-println()
-println("Prediction results")
-println("------------------")
-println("Test MSE (MatrixLM): ", mse_mlm)
-println("Test MSE (Bayes):    ", mse_bys)
-println("Ratio of Test MSE MLM and Bayes: ", mse_mlm / mse_bys)
-
-println()
-println("Fitting MatrixLM on test data...")
-mlm_test = fit_copdgene_matrixlm(
-    split.X_test,
-    split.Y_test,
-    obj.Z
+repetition_metrics, summary = summarize_reference_agreement(
+    fit_results;
+    covariate_names = String.(obj.coef_names)
 )
 
-println("Running one-level Bayesian model on test estimates...")
-B_bayes_test, SE_bayes_test, res_test =
-    fit_bayes_all_covariates_one(
-        mlm_test.coef,
-        mlm_test.se,
-        obj.subclass_of_met,
-        obj.H;
-        mu0 = 0.0,
-        s0 = 1.0,
-        n_iter = 5000,
-        burnin = 1000,
-        thin = 1,
-        seed0 = 1000,
-        keep_results = false
-    )
+@assert FOCAL_COVARIATE in summary.covariate "Missing focal covariate: $FOCAL_COVARIATE"
 
-mse_bys_te = mean(abs2, B_bayes_train .- B_bayes_test)
-mse_mlm_te = mean(abs2, mlm_train.coef .- mlm_test.coef)
+weight_summary = subset(
+    summary,
+    :covariate => ByRow(==(FOCAL_COVARIATE))
+)
+
+weight_table = select(
+    weight_summary,
+    :n_train,
+    :n_test,
+    :mean_mse_mlm,
+    :mean_mse_bayes,
+    :ratio_of_mean_mses,
+    :percent_reduction_from_mean_mses
+)
+
+sort!(weight_table, :n_train)
+
+all_reps_path = joinpath(
+    table_dir,
+    "pansteatitis_rmr_all_reps.csv"
+)
+
+summary_path = joinpath(
+    table_dir,
+    "pansteatitis_rmr_summary.csv"
+)
+
+weight_path = joinpath(
+    table_dir,
+    "pansteatitis_rmr_weight.csv"
+)
+
+CSV.write(all_reps_path, repetition_metrics)
+CSV.write(summary_path, summary)
+CSV.write(weight_path, weight_table)
 
 println()
-println("Estimate reproducibility results")
-println("--------------------------------")
-println("MSE between Bayes estimates (train vs test): ", mse_bys_te)
-println("MSE between MatrixLM estimates (train vs test): ", mse_mlm_te)
-println("Ratio of MSEs (MatrixLM / Bayes): ", mse_mlm_te / mse_bys_te)
+println("PANSTEATITIS results: $FOCAL_COVARIATE")
+println(latex_booktabs_table(weight_table))
 
-println()
+println("Saved:")
+println(all_reps_path)
+println(summary_path)
+println(weight_path)
 println("Done.")
