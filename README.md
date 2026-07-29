@@ -1,9 +1,8 @@
 # A Bayesian framework using shared features improves metabolite estimation and prediction
 
-Harsh Vardhan Dubey<sup>1</sup>, Gregory Farage<sup>1</sup>, Katerina Kechris<sup>2</sup>, Śaunak Sen<sup>1</sup>
+Harsh Vardhan Dubey<sup>1</sup>, Gregory Farage<sup>1</sup>, Śaunak Sen<sup>1</sup>
 
 ><sup>1</sup>Department of Preventive Medicine, College of Medicine, University of Tennessee Health Science Center, Memphis, TN   
-<sup>2</sup>Department of Biostatistics & Informatics, Colorado School of Public Health, University of Colorado Anschutz Medical Campus, Aurora, CO
 
 ### Abstract
 
@@ -28,7 +27,11 @@ Each application is distributed as an independent Julia project with its own Pro
 - [**COPDGene Study**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/COPDGene)
 - [**Statin-Associated Muscle Symptoms (SAMS) Study**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/PANSTEATITISstudy)  
 - [**Pansteatitis Mozambique Tilapia Study**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/SAMSstudy)
-- [**Simulation**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/Simulation)  
+- [**Simulation**](https://github.com/senresearch/BayesHierarchy_MLM/tree/main/Simulation) 
+
+### Data availability
+
+Study data are not distributed with this repository. Each application README lists the required input files and their expected locations. After obtaining the relevant data, place the files in the specified data directory before running the corresponding reproducibility pipeline.
 
 ### Citation
 

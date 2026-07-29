@@ -1,2 +1,8 @@
 .DS_Store
 **/.DS_Store
+
+# Temporary application lock files
+**/.~lock.*#
+
+# Data files are not distributed with this repository
+**/data/**/*.csv
