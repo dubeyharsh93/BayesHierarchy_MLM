@@ -37,7 +37,7 @@ Study data are not distributed with this repository. Each application README lis
 
 If you use this repository, please cite
 
-> Paper citation here
+- Dubey, H. V., et al. Using Shared Features Improves Metabolite Effect Estimation. bioRxiv preprint, 2026.
 
 ### References:
 
