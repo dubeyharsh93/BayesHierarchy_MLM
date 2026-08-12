@@ -37,7 +37,7 @@ Study data are not distributed with this repository. Each application README lis
 
 If you use this repository, please cite
 
-- Harsh Vardhan Dubey, Gregory Farage, and Śaunak Sen. Using Shared Features Improves Metabolite Effect Estimation. bioRxiv preprint, 2026. doi:https://doi.org/10.64898/2026.07.31.742124
+- Harsh Vardhan Dubey, Gregory Farage, and Śaunak Sen. Using Shared Features Improves Metabolite Effect Estimation. bioRxiv preprint, 2026. doi: https://doi.org/10.64898/2026.07.31.742124
 
 ### References:
 
